@@ -8,6 +8,7 @@ import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.node.services.Vault;
 import net.corda.core.node.services.vault.*;
+import net.corda.core.node.services.vault.QueryCriteria.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,7 +41,7 @@ public class Controller {
     @GetMapping(value = "/getIOUs/linearId/{linearId}")
     public List<StateAndRef<IOUState>> getIousWithLinearId(@PathVariable String linearId) {
         UniqueIdentifier linearIdentifier = UniqueIdentifier.Companion.fromString(linearId);
-        QueryCriteria criteria = new QueryCriteria.LinearStateQueryCriteria(
+        QueryCriteria criteria = new LinearStateQueryCriteria(
                 null, ImmutableList.of(linearIdentifier),
                 Vault.StateStatus.ALL, null);
         return proxy.vaultQueryByCriteria(criteria, IOUState.class).getStates();
@@ -50,19 +51,8 @@ public class Controller {
     public List<StateAndRef<IOUState>> getIOUsWithAmountGreaterThan(@PathVariable Long amount) throws NoSuchFieldException {
         FieldInfo field = getField("amount", IOUCustomSchema.PersistentIOU.class);
         CriteriaExpression expression = Builder.greaterThan(field, amount);
-        QueryCriteria criteria = new QueryCriteria.VaultCustomQueryCriteria(expression);
+        QueryCriteria criteria = new VaultCustomQueryCriteria(expression);
         return proxy.vaultQueryByCriteria(criteria, IOUState.class).getStates();
-//        return QueryCriteriaUtils.builder(dsl -> {
-//            QueryCriteria criteria = null;
-//            try {
-//                criteria = new QueryCriteria.VaultCustomQueryCriteria(
-//                        Builder.greaterThan(QueryCriteriaUtils.getField("amount", IOUState.IOUCustomSchema.PersistentIOU.class), amount)
-//                );
-//            } catch (NoSuchFieldException e) {
-//                e.printStackTrace();
-//            }
-//            return proxy.vaultQueryByCriteria(criteria, IOUState.class).getStates();
-//        });
     }
 
 }
