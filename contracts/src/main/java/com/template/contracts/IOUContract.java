@@ -32,6 +32,23 @@ public class IOUContract implements Contract {
         class Issue extends TypeOnlyCommandData implements Commands{}
         class Transfer extends TypeOnlyCommandData implements Commands{}
         class Merge extends TypeOnlyCommandData implements Commands{}
+
+        class Exchange implements Commands{
+            String currency;
+            Double rate;
+            public Exchange(String currency, Double rate) {
+                this.currency = currency;
+                this.rate = rate;
+            }
+
+            public String getCurrency() {
+                return currency;
+            }
+
+            public Double getRate() {
+                return rate;
+            }
+        }
     }
     /**
      * The contract code for the [IOUContract].
