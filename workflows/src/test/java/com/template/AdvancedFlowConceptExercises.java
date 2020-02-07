@@ -33,12 +33,7 @@ public class AdvancedFlowConceptExercises {
             new CordaX500Name("ExchangeRateOracleService", "New York", "US")
     );
 
-    public AdvancedFlowConceptExercises() {
-        //a.registerInitiatedFlow(QueryHandler.class);
-        //b.registerInitiatedFlow(QueryHandler.class);
-        //a.registerInitiatedFlow(SignHandler.class);
-        //b.registerInitiatedFlow(SignHandler.class);
-    }
+    public AdvancedFlowConceptExercises() { }
 
     @Before
     public void setup() {
