@@ -23,9 +23,6 @@ public class ExchangeRateOracleService extends SingletonSerializeAsToken {
     public ExchangeRateOracleService(ServiceHub serviceHub) {
         this.serviceHub = serviceHub;
         this.myKey = serviceHub.getMyInfo().getLegalIdentities().get(0).getOwningKey();
-
-        ExecutorService executor = Executors.newFixedThreadPool(5);
-
     }
 
     public Double query(String currencyCode) {
