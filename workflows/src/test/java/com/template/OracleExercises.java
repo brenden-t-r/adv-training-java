@@ -9,7 +9,6 @@ import com.template.flows.ExchangeRateOracleService;
 import com.template.states.IOUState;
 import com.template.states.IOUToken;
 import com.template.states.IOUTokenState;
-import net.corda.core.concurrent.CordaFuture;
 import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.Command;
 import net.corda.core.crypto.TransactionSignature;
