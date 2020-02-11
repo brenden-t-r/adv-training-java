@@ -4,7 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken;
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType;
 import com.r3.corda.lib.tokens.contracts.types.TokenType;
+import com.r3.corda.lib.tokens.contracts.utilities.AmountUtilitiesKt;
+import com.r3.corda.lib.tokens.contracts.utilities.TokenUtilitiesKt;
+import com.r3.corda.lib.tokens.money.UtilitiesKt;
 import com.r3.corda.lib.tokens.workflows.internal.selection.TokenSelection;
+import com.r3.corda.lib.tokens.money.FiatCurrency.Companion.*;
 import com.template.contracts.IOUContract;
 import com.template.states.IOUToken;
 import net.corda.core.contracts.Amount;
@@ -33,8 +37,12 @@ public class IOUTokenIssueFlow extends FlowLogic<SignedTransaction> {
                 new Amount<>(tokenAmount, issuedTokenType), getOurIdentity(),
                 getServiceHub().getCordappProvider().getContractAttachmentID(IOUContract.IOU_CONTRACT_ID)
         );
-
         return subFlow(new IssueTokens(ImmutableList.of(fungibleTokens)));
+
+//        ALTERNATIVE SYNTAX
+//        Amount<TokenType> amount = AmountUtilitiesKt.amount(tokenAmount, iouToken);
+//        Amount<IssuedTokenType> issuedToken = AmountUtilitiesKt.issuedBy(amount, getOurIdentity());
+//        FungibleToken fungibleToken = TokenUtilitiesKt.heldBy(issuedToken, getOurIdentity());
     }
 }
 

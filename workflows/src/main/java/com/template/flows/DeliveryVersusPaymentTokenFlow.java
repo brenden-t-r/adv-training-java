@@ -20,6 +20,8 @@ import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import com.r3.corda.lib.tokens.workflows.flows.move.MoveTokensUtilitiesKt;
+import com.r3.corda.lib.tokens.contracts.utilities.TokenUtilitiesKt;
+import com.r3.corda.lib.tokens.contracts.utilities.AmountUtilitiesKt;
 
 import java.util.List;
 
@@ -41,19 +43,10 @@ public class DeliveryVersusPaymentTokenFlow extends FlowLogic<SignedTransaction>
         IssuedTokenType issuedTokenType = new IssuedTokenType(getOurIdentity(), ourpayment);
         Amount<TokenType> ourPaymentAmount = new Amount<>(1000, issuedTokenType);
 
-
         QueryCriteria queryCriteria = QueryUtilitiesKt.tokenAmountWithIssuerCriteria(ourpayment, getOurIdentity());
-
         TransactionBuilder builder = new TransactionBuilder(notary);
         builder = MoveTokensUtilitiesKt.addMoveFungibleTokens(
                 builder, getServiceHub(), ourPaymentAmount, counterParty, getOurIdentity(), queryCriteria);
-
-
-//        TokenSelection selector = new TokenSelection(getServiceHub(), 5, 5000, 5);
-//        PartyAndAmount<TokenType> partyAndAmount = new PartyAndAmount<>(counterParty, ourPaymentAmount);
-//        Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> move =
-//                selector.generateMove(builder.getLockId(), ImmutableList.of(partyAndAmount), getOurIdentity(), queryCriteria);
-
         builder = MoveTokensUtilitiesKt.addMoveNonFungibleTokens(
                 builder, getServiceHub(), counterPartyAsset, getOurIdentity()
         );
