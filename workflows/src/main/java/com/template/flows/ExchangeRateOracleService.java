@@ -51,6 +51,11 @@ public class ExchangeRateOracleService extends SingletonSerializeAsToken {
                         (IOUContract.Commands.Exchange)command.getValue();
                 return command.getSigners().contains(myKey) &&
                         query(exchange.getCurrency()).equals(exchange.getRate());
+            } else if (command.getValue().getClass().equals(IOUContract.Commands.Novate.class)) {
+                IOUContract.Commands.Novate novate =
+                        (IOUContract.Commands.Novate)command.getValue();
+                return command.getSigners().contains(myKey) &&
+                        query(novate.getCurrency()).equals(novate.getRate());
             } else {
                 return false;
             }

@@ -18,26 +18,33 @@ import java.util.List;
 import java.util.UUID;
 
 @BelongsToContract(IOUContract.class)
-public class IOUState implements QueryableState, LinearState {
+public class IOUState implements LinearState {
 
     public final Amount<TokenType> amount;
     public final Party lender;
     public final Party borrower;
-    public final Amount<TokenType> paid;
     private final UniqueIdentifier linearId;
+    private final Double novatedAmount;
+    private final String novatedCurrency;
+    private final String settlementAccount;
+    private final Boolean settled;
+
 
     // Private constructor used only for copying a State object
     @ConstructorForDeserialization
-    private IOUState(Amount<TokenType> amount, Party lender, Party borrower, Amount<TokenType> paid, UniqueIdentifier linearId){
+    public IOUState(Amount<TokenType> amount, Party lender, Party borrower, UniqueIdentifier linearId, Double novatedAmount, String novatedCurrency, String settlementAccount, Boolean settled) {
         this.amount = amount;
         this.lender = lender;
         this.borrower = borrower;
-        this.paid = paid;
         this.linearId = linearId;
+        this.novatedAmount = novatedAmount;
+        this.novatedCurrency = novatedCurrency;
+        this.settlementAccount = settlementAccount;
+        this.settled = settled;
     }
 
     public IOUState(Amount<TokenType> amount, Party lender, Party borrower) {
-        this(amount, lender, borrower, new Amount<>(0, amount.getToken()), new UniqueIdentifier());
+        this(amount, lender, borrower, new UniqueIdentifier(), 0.0, null, null, false);
     }
 
     public Amount<TokenType> getAmount() {
@@ -52,8 +59,20 @@ public class IOUState implements QueryableState, LinearState {
         return borrower;
     }
 
-    public Amount<TokenType> getPaid() {
-        return paid;
+    public Double getNovatedAmount() {
+        return novatedAmount;
+    }
+
+    public String getNovatedCurrency() {
+        return novatedCurrency;
+    }
+
+    public Boolean getSettled() {
+        return settled;
+    }
+
+    public String getSettlementAccount() {
+        return settlementAccount;
     }
 
     @Override
@@ -70,39 +89,38 @@ public class IOUState implements QueryableState, LinearState {
         return ImmutableList.of(lender, borrower);
     }
 
-    /**
-     * Helper methods for when building transactions for settling and transferring IOUs.
-     * - [pay] adds an amount to the paid property. It does no validation.
-     * - [withNewLender] creates a copy of the current state with a newly specified lender. For use when transferring.
-     * - [copy] creates a copy of the state using the internal copy constructor ensuring the LinearId is preserved.
-     */
-    public IOUState pay(Amount<TokenType> amountToPay) {
-        Amount<TokenType> newAmountPaid = this.paid.plus(amountToPay);
-        return new IOUState(amount, lender, borrower, newAmountPaid, linearId);
+
+    public IOUState withNovatedAmount(String currency, Double novatedAmount) {
+        return new IOUState(amount, lender, borrower, linearId, novatedAmount, currency, null, settled);
+    }
+
+    public IOUState withSettlementAccount(String settlementAccount) {
+        return new IOUState(amount, lender, borrower, linearId, novatedAmount, novatedCurrency, settlementAccount, settled);
+    }
+
+
+    public IOUState withSettled() {
+        return new IOUState(amount, lender, borrower, linearId, novatedAmount, novatedCurrency, null, true);
     }
 
     public IOUState withNewLender(Party newLender) {
-        return new IOUState(amount, newLender, borrower, paid, linearId);
+        return new IOUState(amount, newLender, borrower, linearId, novatedAmount, novatedCurrency, null,settled);
     }
 
-    public IOUState copy(Amount<TokenType> amount, Party lender, Party borrower, Amount<TokenType> paid) {
-        return new IOUState(amount, lender, borrower, paid, this.getLinearId());
-    }
-
-    @Override
-    public PersistentState generateMappedObject(MappedSchema schema) {
-        if (schema instanceof IOUCustomSchema) {
-            return new IOUCustomSchema.PersistentIOU(linearId.getId(), lender.getName().toString(),
-                    borrower.getName().toString(), amount.getQuantity());
-        } else{
-            throw new IllegalArgumentException("Unrecognised schema " + schema);
-        }
-    }
-
-    @Override
-    public Iterable<MappedSchema> supportedSchemas() {
-        return ImmutableList.of(new IOUCustomSchema());
-    }
+//    @Override
+//    public PersistentState generateMappedObject(MappedSchema schema) {
+//        if (schema instanceof IOUCustomSchema) {
+//            return new IOUCustomSchema.PersistentIOU(linearId.getId(), lender.getName().toString(),
+//                    borrower.getName().toString(), amount.getQuantity());
+//        } else{
+//            throw new IllegalArgumentException("Unrecognised schema " + schema);
+//        }
+//    }
+//
+//    @Override
+//    public Iterable<MappedSchema> supportedSchemas() {
+//        return ImmutableList.of(new IOUCustomSchema());
+//    }
 
 }
 

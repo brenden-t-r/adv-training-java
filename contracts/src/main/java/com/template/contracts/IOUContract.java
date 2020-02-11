@@ -32,6 +32,24 @@ public class IOUContract implements Contract {
         class Issue extends TypeOnlyCommandData implements Commands{}
         class Transfer extends TypeOnlyCommandData implements Commands{}
         class Merge extends TypeOnlyCommandData implements Commands{}
+        class Settle extends TypeOnlyCommandData implements Commands{}
+
+        class Novate implements Commands{
+            String currency;
+            Double rate;
+            public Novate(String currency, Double rate) {
+                this.currency = currency;
+                this.rate = rate;
+            }
+
+            public String getCurrency() {
+                return currency;
+            }
+
+            public Double getRate() {
+                return rate;
+            }
+        }
 
         class Exchange implements Commands{
             String currency;
@@ -108,8 +126,6 @@ public class IOUContract implements Contract {
                 IOUState outputState = tx.outputsOfType(IOUState.class).get(0);
                 IOUState checkOutputState = outputState.withNewLender(inputState.getLender());
 
-                require.using("Only the lender property may change.",
-                        checkOutputState.amount.equals(inputState.amount) && checkOutputState.getLinearId().equals(inputState.getLinearId()) && checkOutputState.borrower.equals(inputState.borrower) && checkOutputState.paid.equals(inputState.paid));
                 require.using("The lender property must change in a transfer.", !outputState.lender.getOwningKey().equals(inputState.lender.getOwningKey()));
 
                 List<PublicKey> listOfPublicKeys = new ArrayList<>();

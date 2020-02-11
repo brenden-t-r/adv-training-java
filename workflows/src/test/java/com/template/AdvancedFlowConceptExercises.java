@@ -3,7 +3,6 @@ package com.template;
 import com.google.common.collect.ImmutableList;
 import com.template.contracts.IOUContract;
 import com.template.flows.ExchangeRateOracleFlow;
-import com.template.flows.Responder;
 import com.template.states.IOUToken;
 import com.template.states.IOUTokenState;
 import net.corda.core.contracts.Amount;
