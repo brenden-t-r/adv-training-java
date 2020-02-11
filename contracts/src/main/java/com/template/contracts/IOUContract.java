@@ -32,7 +32,18 @@ public class IOUContract implements Contract {
         class Issue extends TypeOnlyCommandData implements Commands{}
         class Transfer extends TypeOnlyCommandData implements Commands{}
         class Merge extends TypeOnlyCommandData implements Commands{}
-        class Settle extends TypeOnlyCommandData implements Commands{}
+
+        class Settle implements Commands{
+            String transactionId;
+
+            public Settle(String transactionId) {
+                this.transactionId = transactionId;
+            }
+
+            public String getTransactionId() {
+                return transactionId;
+            }
+        }
 
         class Novate implements Commands{
             String currency;

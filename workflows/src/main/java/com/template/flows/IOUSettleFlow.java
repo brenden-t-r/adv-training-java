@@ -84,7 +84,6 @@ public class IOUSettleFlow {
             SignedTransaction stx = subFlow(new CollectSignaturesFlow(fxSigned, sessions));
             SignedTransaction novatedTx = subFlow(new FinalityFlow(stx));
 
-
             /*
              Make offledger payment
              */
@@ -94,27 +93,22 @@ public class IOUSettleFlow {
             );
 
             /*
-            Verify Off Ledger Payment
-             */
-
-
-            /*
             Settle
              */
             StateAndRef<IOUState> novatedStateRef = vaultQuery(novatedIOU.getLinearId());
             builder = new TransactionBuilder(notary);
             builder.addInputState(novatedStateRef);
-            builder.addOutputState(novatedIOU.withSettled());
+            builder.addOutputState(novatedIOU.withSettled(), IOUContract.IOU_CONTRACT_ID);
             requiredSigners = ImmutableList.of(
                     state.getLender(), state.getBorrower(), settlerOracle);
-            builder.addCommand(new IOUContract.Commands.Settle(),
+            builder.addCommand(new IOUContract.Commands.Settle(transactionId),
                     requiredSigners.stream().map(it -> it.getOwningKey()).collect(Collectors.toList()));
             builder.verify(getServiceHub());
             ptx = getServiceHub().signInitialTransaction(builder);
 
             // Get Settlement oracle signature and add to SignedTransaction
             TransactionSignature oracleSignature = subFlow(
-                    new SettlerOracle.SignOffLedgerPayment(settlerOracle, stx, transactionId));
+                    new SettlerOracle.SignOffLedgerPayment(settlerOracle, ptx));
             SignedTransaction settlerSigned = ptx.withAdditionalSignature(oracleSignature);
 
             // Collect counter-party signature and finalize
@@ -123,24 +117,6 @@ public class IOUSettleFlow {
             sessions = otherParties.stream().map(el -> initiateFlow(el)).collect(Collectors.toList());
             stx = subFlow(new CollectSignaturesFlow(settlerSigned, sessions));
             stx = subFlow(new FinalityFlow(stx));
-
-
-            // txbuilder with settled = true
-            // Signature settlerSignature = settlerOracleService.sign(stx);
-            // Collect sigs
-            // Now with all parties signature, finalize
-
-
-//        subFlow(NovateIOUFlow(..))
-//        subFlow(UpdateSettlementTerms(..))
-//        subFlow(IOUOffledgerPayment(..))
-//        subFlow(VerifyOffLedgerPayment(..))
-
-//        IOUState novatedIOU = (IOUState)novatedTx.getTx().getOutputStates().get(0);
-//        StateAndRef<IOUState> novatedStateRef = vaultQuery(novatedIOU.getLinearId());
-//        builder.addInputState(novatedStateRef);
-
-
             return stx;
         }
 

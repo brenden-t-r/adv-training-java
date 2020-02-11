@@ -91,7 +91,7 @@ public class IOUState implements LinearState {
 
 
     public IOUState withNovatedAmount(String currency, Double novatedAmount) {
-        return new IOUState(amount, lender, borrower, linearId, novatedAmount, currency, null, settled);
+        return new IOUState(amount, lender, borrower, linearId, novatedAmount, currency, settlementAccount, settled);
     }
 
     public IOUState withSettlementAccount(String settlementAccount) {
@@ -100,11 +100,11 @@ public class IOUState implements LinearState {
 
 
     public IOUState withSettled() {
-        return new IOUState(amount, lender, borrower, linearId, novatedAmount, novatedCurrency, null, true);
+        return new IOUState(amount, lender, borrower, linearId, novatedAmount, novatedCurrency, settlementAccount, true);
     }
 
     public IOUState withNewLender(Party newLender) {
-        return new IOUState(amount, newLender, borrower, linearId, novatedAmount, novatedCurrency, null,settled);
+        return new IOUState(amount, newLender, borrower, linearId, novatedAmount, novatedCurrency, settlementAccount,settled);
     }
 
 //    @Override

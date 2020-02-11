@@ -15,12 +15,10 @@ public class SettlerOracle {
 
         private Party oracle;
         private SignedTransaction stx;
-        private String transactionId;
 
-        public SignOffLedgerPayment(Party oracle, SignedTransaction stx, String transactionId) {
+        public SignOffLedgerPayment(Party oracle, SignedTransaction stx) {
             this.oracle = oracle;
             this.stx = stx;
-            this.transactionId = transactionId;
         }
 
         @Suspendable
@@ -28,7 +26,7 @@ public class SettlerOracle {
         public TransactionSignature call() throws FlowException {
             FlowSession session = initiateFlow(oracle);
             return session
-                    .sendAndReceive(TransactionSignature.class, new Pair<>(transactionId, stx))
+                    .sendAndReceive(TransactionSignature.class, stx)
                     .unwrap(it -> it);
         }
     }
@@ -46,12 +44,12 @@ public class SettlerOracle {
         @Override
         public Void call() throws FlowException {
             try {
-                Pair<String, SignedTransaction> request = (Pair<String, SignedTransaction>)session
-                        .receive(Pair.class)
+                SignedTransaction request = session
+                        .receive(SignedTransaction.class)
                         .unwrap(it -> it);
                 TransactionSignature response = getServiceHub()
                         .cordaService(SettlerOracleService.class)
-                        .sign(request.getKey(), request.getValue());
+                        .sign(request);
                 session.send(response);
 
             } catch (FilteredTransactionVerificationException e) {
