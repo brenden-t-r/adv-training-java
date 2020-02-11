@@ -11,6 +11,7 @@ import net.corda.core.crypto.TransactionSignature;
 import net.corda.core.flows.*;
 import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
+import net.corda.core.node.services.CordaService;
 import net.corda.core.node.services.Vault;
 import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.core.transactions.SignedTransaction;
@@ -56,7 +57,9 @@ public class IOUSettleFlow {
 
             IOUState state = stateToSettle.getState().getData();
 
-            // Novate IOU and update Settlement terms
+            /*
+             Novate IOU and update Settlement terms
+             */
             Double fxRate = getServiceHub().cordaService(ExchangeRateOracleService.class).query(CURRENCY);
             Double novatedAmount = fxRate * state.getAmount().getQuantity();
             TransactionBuilder builder = new TransactionBuilder(notary);
@@ -69,23 +72,59 @@ public class IOUSettleFlow {
             builder.addCommand(new IOUContract.Commands.Novate(CURRENCY, fxRate),
                     requiredSigners.stream().map(it -> it.getOwningKey()).collect(Collectors.toList()));
             builder.verify(getServiceHub());
-            final SignedTransaction ptx = getServiceHub().signInitialTransaction(builder);
+            SignedTransaction ptx = getServiceHub().signInitialTransaction(builder);
 
+            // Get FxRate oracle signature and add to SignedTransaction
             SignedTransaction fxSigned = subFlow(new ExchangeRateOracleFlow(ptx));
 
-            List<Party> otherParties = requiredSigners.stream().map(el -> (Party)el).collect(Collectors.toList());
+            // Collect counter-party signature and finalize
+            List<Party> otherParties = state.getParticipants().stream().map(el -> (Party)el).collect(Collectors.toList());
             otherParties.remove(getOurIdentity());
             List<FlowSession> sessions = otherParties.stream().map(el -> initiateFlow(el)).collect(Collectors.toList());
-            SignedTransaction stx = subFlow(new CollectSignaturesFlow(ptx, sessions));
+            SignedTransaction stx = subFlow(new CollectSignaturesFlow(fxSigned, sessions));
             SignedTransaction novatedTx = subFlow(new FinalityFlow(stx));
-            return novatedTx;
 
 
-            // Make offledger payment
-            // txId = fakeBankApiService.pay(accountToPay, amountToPay);
+            /*
+             Make offledger payment
+             */
+            IOUState novatedIOU = (IOUState)novatedTx.getTx().getOutputStates().get(0);
+            String transactionId = getServiceHub().cordaService(OffLedgerPaymentRailService.class).makePayment(
+                    novatedIOU.getSettlementAccount(), novatedIOU.getNovatedAmount()
+            );
 
-            // Verify offledger payment
-            // settlerOracleService.verify(novatedIOU);
+            /*
+            Verify Off Ledger Payment
+             */
+
+
+            /*
+            Settle
+             */
+            StateAndRef<IOUState> novatedStateRef = vaultQuery(novatedIOU.getLinearId());
+            builder = new TransactionBuilder(notary);
+            builder.addInputState(novatedStateRef);
+            builder.addOutputState(novatedIOU.withSettled());
+            requiredSigners = ImmutableList.of(
+                    state.getLender(), state.getBorrower(), settlerOracle);
+            builder.addCommand(new IOUContract.Commands.Settle(),
+                    requiredSigners.stream().map(it -> it.getOwningKey()).collect(Collectors.toList()));
+            builder.verify(getServiceHub());
+            ptx = getServiceHub().signInitialTransaction(builder);
+
+            // Get Settlement oracle signature and add to SignedTransaction
+            TransactionSignature oracleSignature = subFlow(
+                    new SettlerOracle.SignOffLedgerPayment(settlerOracle, stx, transactionId));
+            SignedTransaction settlerSigned = ptx.withAdditionalSignature(oracleSignature);
+
+            // Collect counter-party signature and finalize
+            otherParties = state.getParticipants().stream().map(el -> (Party)el).collect(Collectors.toList());
+            otherParties.remove(getOurIdentity());
+            sessions = otherParties.stream().map(el -> initiateFlow(el)).collect(Collectors.toList());
+            stx = subFlow(new CollectSignaturesFlow(settlerSigned, sessions));
+            stx = subFlow(new FinalityFlow(stx));
+
+
             // txbuilder with settled = true
             // Signature settlerSignature = settlerOracleService.sign(stx);
             // Collect sigs
@@ -102,7 +141,7 @@ public class IOUSettleFlow {
 //        builder.addInputState(novatedStateRef);
 
 
-            //return null;
+            return stx;
         }
 
         private StateAndRef<IOUState> vaultQuery(UniqueIdentifier linearId) {

@@ -85,6 +85,8 @@ public class SettlerExercises {
         assertEquals("USD", output.getNovatedCurrency());
         assertEquals(150.0, output.getNovatedAmount());
         assertEquals("ABCD1234", output.getSettlementAccount());
+        assertEquals(true, output.getSettled().booleanValue());
+        assertEquals(3, stx.getSigs().size());
     }
 
     public StateAndRef<IOUState> vaultQuery(UniqueIdentifier linearId) {
