@@ -6,6 +6,7 @@ import com.template.contracts.IOUContract;
 import com.template.states.IOUState;
 import net.corda.core.contracts.ContractState;
 import net.corda.core.contracts.StateAndRef;
+import net.corda.core.crypto.SecureHash;
 import net.corda.core.crypto.TransactionSignature;
 import net.corda.core.flows.*;
 import net.corda.core.identity.CordaX500Name;
@@ -75,6 +76,7 @@ public class IOUVerifySettlementFlow {
     @InitiatedBy(IOUVerifySettlementFlow.Initiator.class)
     public static class ResponderFlow extends FlowLogic<SignedTransaction> {
         private final FlowSession flowSession;
+        private SecureHash txWeJustSigned;
 
         public ResponderFlow(FlowSession flowSession){
             this.flowSession = flowSession;
@@ -83,7 +85,8 @@ public class IOUVerifySettlementFlow {
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
-            class SignTxFlow extends SignTransactionFlow{
+
+            class SignTxFlow extends SignTransactionFlow {
 
                 private SignTxFlow(FlowSession flowSession, ProgressTracker progressTracker) {
                     super(flowSession, progressTracker);
@@ -91,13 +94,13 @@ public class IOUVerifySettlementFlow {
 
                 @Override
                 protected void checkTransaction(SignedTransaction stx) {
-                    requireThat(req -> {
-                        ContractState output = stx.getTx().getOutputs().get(0).getData();
-                        return null;
-                    });
+                    txWeJustSigned = stx.getId();
                 }
             }
-            return subFlow(new SignTxFlow(flowSession, SignTransactionFlow.Companion.tracker()));
+
+            SignTxFlow signTxFlow = new SignTxFlow(flowSession, SignTransactionFlow.Companion.tracker());
+            subFlow(signTxFlow);
+            return subFlow(new ReceiveFinalityFlow(flowSession, txWeJustSigned));
         }
     }
 }

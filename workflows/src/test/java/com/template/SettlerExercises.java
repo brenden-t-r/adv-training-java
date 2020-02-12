@@ -47,8 +47,8 @@ public class SettlerExercises {
         b.registerInitiatedFlow(ExchangeRateOracle.QueryHandler.class);
         a.registerInitiatedFlow(ExchangeRateOracle.SignHandler.class);
         b.registerInitiatedFlow(ExchangeRateOracle.SignHandler.class);
-        a.registerInitiatedFlow(IOUSettleFlow.ResponderFlow.class);
-        b.registerInitiatedFlow(IOUSettleFlow.ResponderFlow.class);
+        //a.registerInitiatedFlow(IOUSettleFlow.ResponderFlow.class);
+        //b.registerInitiatedFlow(IOUSettleFlow.ResponderFlow.class);
     }
 
     @Before

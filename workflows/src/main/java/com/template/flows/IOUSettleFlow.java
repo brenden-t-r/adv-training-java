@@ -2,30 +2,19 @@ package com.template.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
 import com.google.common.collect.ImmutableList;
-import com.r3.corda.lib.tokens.contracts.types.TokenType;
-import com.r3.corda.lib.tokens.money.FiatCurrency;
-import com.template.contracts.IOUContract;
 import com.template.states.IOUState;
-import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.ContractState;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.contracts.UniqueIdentifier;
-import net.corda.core.crypto.TransactionSignature;
+import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
-import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
-import net.corda.core.node.services.CordaService;
 import net.corda.core.node.services.Vault;
 import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.core.transactions.SignedTransaction;
-import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
 
-import java.math.BigDecimal;
-import java.security.PublicKey;
-import java.util.Currency;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static net.corda.core.contracts.ContractsDSL.requireThat;
@@ -56,7 +45,7 @@ public class IOUSettleFlow {
             ));
             List<FlowSession> sessions = createCounterpartySessions(oracleSignedTx);
             SignedTransaction novatedTx = subFlow(new FinalityFlow(
-                            subFlow(new CollectSignaturesFlow(oracleSignedTx, sessions)))
+                            subFlow(new CollectSignaturesFlow(oracleSignedTx, sessions)), sessions)
             );
             IOUState novatedIOU = (IOUState)novatedTx.getTx().getOutputStates().get(0);
 
@@ -79,7 +68,7 @@ public class IOUSettleFlow {
             // Collect counter-party signature and finalize
             sessions = createCounterpartySessions(settlerSignedTx);
             return subFlow(new FinalityFlow(
-                    subFlow(new CollectSignaturesFlow(settlerSignedTx, sessions)))
+                    subFlow(new CollectSignaturesFlow(settlerSignedTx, sessions)), sessions)
             );
         }
 
@@ -102,6 +91,7 @@ public class IOUSettleFlow {
     @InitiatedBy(IOUSettleFlow.Initiator.class)
     public static class ResponderFlow extends FlowLogic<SignedTransaction> {
         private final FlowSession flowSession;
+        private SecureHash txWeJustSigned;
 
         public ResponderFlow(FlowSession flowSession){
             this.flowSession = flowSession;
@@ -110,7 +100,8 @@ public class IOUSettleFlow {
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
-            class SignTxFlow extends SignTransactionFlow{
+
+            class SignTxFlow extends SignTransactionFlow {
 
                 private SignTxFlow(FlowSession flowSession, ProgressTracker progressTracker) {
                     super(flowSession, progressTracker);
@@ -118,13 +109,13 @@ public class IOUSettleFlow {
 
                 @Override
                 protected void checkTransaction(SignedTransaction stx) {
-                    requireThat(req -> {
-                        ContractState output = stx.getTx().getOutputs().get(0).getData();
-                        return null;
-                    });
+                    txWeJustSigned = stx.getId();
                 }
             }
-            return subFlow(new SignTxFlow(flowSession, SignTransactionFlow.Companion.tracker()));
+
+            SignTxFlow signTxFlow = new SignTxFlow(flowSession, SignTransactionFlow.Companion.tracker());
+            subFlow(signTxFlow);
+            return subFlow(new ReceiveFinalityFlow(flowSession, txWeJustSigned));
         }
     }
 }
