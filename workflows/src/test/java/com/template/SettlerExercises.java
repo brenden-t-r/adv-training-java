@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.fail;
 
 public class SettlerExercises {
     private final MockNetwork network = new MockNetwork(new MockNetworkParameters(ImmutableList.of(
@@ -54,8 +55,35 @@ public class SettlerExercises {
         network.stopNodes();
     }
 
+    /*
+    Exercise 1 -> Novate IOUState
+
+    Exercise 2 -> Make offledger payment
+    Update OffLedgerPaymentRail service?
+
+    Exercise 3 -> Verify payment with settler oracle
+    Update SettlerOracleService
+
+    Optional Exercise 4 -> Implment IOUSettleFlow using subflows from previous exercises
+     */
+
     @Test
-    public void iouSettleFlow() throws ExecutionException, InterruptedException {
+    public void implementIOUNovateFlow() {
+        fail();
+    }
+
+    @Test
+    public void implementOffLedgerPaymentFlow() {
+        fail();
+    }
+
+    @Test
+    public void implementIOUVerifySettlementFlow() {
+        fail();
+    }
+
+    @Test
+    public void implmentIOUSettleFlow() throws ExecutionException, InterruptedException {
 
         IOUState state = new IOUState(
                 new Amount<TokenType>(100L, new IOUToken("CUSTOM_TOKEN", 0)),
