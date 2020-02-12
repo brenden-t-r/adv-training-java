@@ -42,14 +42,7 @@ public class SettlerExercises {
             new CordaX500Name("SettlerOracleService", "New York", "US")
     );
 
-    public SettlerExercises() {
-        a.registerInitiatedFlow(ExchangeRateOracle.QueryHandler.class);
-        b.registerInitiatedFlow(ExchangeRateOracle.QueryHandler.class);
-        a.registerInitiatedFlow(ExchangeRateOracle.SignHandler.class);
-        b.registerInitiatedFlow(ExchangeRateOracle.SignHandler.class);
-        //a.registerInitiatedFlow(IOUSettleFlow.ResponderFlow.class);
-        //b.registerInitiatedFlow(IOUSettleFlow.ResponderFlow.class);
-    }
+    public SettlerExercises() {}
 
     @Before
     public void setup() {

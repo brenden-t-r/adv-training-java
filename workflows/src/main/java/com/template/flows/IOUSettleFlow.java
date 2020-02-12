@@ -17,8 +17,6 @@ import net.corda.core.utilities.ProgressTracker;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static net.corda.core.contracts.ContractsDSL.requireThat;
-
 public class IOUSettleFlow {
 
     @InitiatingFlow
@@ -44,10 +42,9 @@ public class IOUSettleFlow {
                     stateToSettle, settlementCurrency, settlementAccount
             ));
             List<FlowSession> sessions = createCounterpartySessions(oracleSignedTx);
-            SignedTransaction novatedTx = subFlow(new FinalityFlow(
-                            subFlow(new CollectSignaturesFlow(oracleSignedTx, sessions)), sessions)
-            );
-            IOUState novatedIOU = (IOUState)novatedTx.getTx().getOutputStates().get(0);
+            oracleSignedTx = subFlow(new CollectSignaturesFlow(oracleSignedTx, sessions));
+            oracleSignedTx = subFlow(new FinalityFlow(oracleSignedTx, sessions));
+            IOUState novatedIOU = (IOUState)oracleSignedTx.getTx().getOutputStates().get(0);
 
             /*
              Make offledger payment
@@ -67,9 +64,8 @@ public class IOUSettleFlow {
 
             // Collect counter-party signature and finalize
             sessions = createCounterpartySessions(settlerSignedTx);
-            return subFlow(new FinalityFlow(
-                    subFlow(new CollectSignaturesFlow(settlerSignedTx, sessions)), sessions)
-            );
+            SignedTransaction stx = subFlow(new CollectSignaturesFlow(settlerSignedTx, sessions));
+            return subFlow(new FinalityFlow(stx, sessions));
         }
 
         private StateAndRef<IOUState> vaultQuery(UniqueIdentifier linearId) {
