@@ -1,18 +1,15 @@
 package com.template.flows;
 
 import com.template.contracts.IOUContract;
-import com.template.states.IOUState;
 import net.corda.core.contracts.Command;
 import net.corda.core.crypto.TransactionSignature;
 import net.corda.core.node.ServiceHub;
 import net.corda.core.node.services.CordaService;
 import net.corda.core.serialization.SingletonSerializeAsToken;
-import net.corda.core.transactions.FilteredTransaction;
 import net.corda.core.transactions.FilteredTransactionVerificationException;
 import net.corda.core.transactions.SignedTransaction;
 
 import java.security.PublicKey;
-import java.security.SignedObject;
 
 @CordaService
 public class SettlerOracleService extends SingletonSerializeAsToken {
