@@ -82,9 +82,8 @@ public class SettlerExercises {
 
         assertEquals(1, signedTx.getTx().getOutputs().size());
         IOUState output = (IOUState) stx.getTx().getOutputStates().get(0);
-        assertEquals("USD", output.getNovatedCurrency());
-        assertEquals(150.0, output.getNovatedAmount());
-        assertEquals("ABCD1234", output.getSettlementAccount());
+        assertEquals(150, output.getAmount().getQuantity());
+        assertEquals("USD", output.getAmount().getToken().getTokenIdentifier());
         assertEquals(true, output.getSettled().booleanValue());
         assertEquals(4, stx.getSigs().size());
     }

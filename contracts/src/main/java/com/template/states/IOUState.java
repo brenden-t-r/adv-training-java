@@ -24,27 +24,21 @@ public class IOUState implements LinearState {
     public final Party lender;
     public final Party borrower;
     private final UniqueIdentifier linearId;
-    private final Double novatedAmount;
-    private final String novatedCurrency;
-    private final String settlementAccount;
     private final Boolean settled;
 
 
     // Private constructor used only for copying a State object
     @ConstructorForDeserialization
-    public IOUState(Amount<TokenType> amount, Party lender, Party borrower, UniqueIdentifier linearId, Double novatedAmount, String novatedCurrency, String settlementAccount, Boolean settled) {
+    public IOUState(Amount<TokenType> amount, Party lender, Party borrower, UniqueIdentifier linearId, Boolean settled) {
         this.amount = amount;
         this.lender = lender;
         this.borrower = borrower;
         this.linearId = linearId;
-        this.novatedAmount = novatedAmount;
-        this.novatedCurrency = novatedCurrency;
-        this.settlementAccount = settlementAccount;
         this.settled = settled;
     }
 
     public IOUState(Amount<TokenType> amount, Party lender, Party borrower) {
-        this(amount, lender, borrower, new UniqueIdentifier(), 0.0, null, null, false);
+        this(amount, lender, borrower, new UniqueIdentifier(), false);
     }
 
     public Amount<TokenType> getAmount() {
@@ -59,20 +53,8 @@ public class IOUState implements LinearState {
         return borrower;
     }
 
-    public Double getNovatedAmount() {
-        return novatedAmount;
-    }
-
-    public String getNovatedCurrency() {
-        return novatedCurrency;
-    }
-
     public Boolean getSettled() {
         return settled;
-    }
-
-    public String getSettlementAccount() {
-        return settlementAccount;
     }
 
     @Override
@@ -90,21 +72,16 @@ public class IOUState implements LinearState {
     }
 
 
-    public IOUState withNovatedAmount(String currency, Double novatedAmount) {
-        return new IOUState(amount, lender, borrower, linearId, novatedAmount, currency, settlementAccount, settled);
-    }
-
-    public IOUState withSettlementAccount(String settlementAccount) {
-        return new IOUState(amount, lender, borrower, linearId, novatedAmount, novatedCurrency, settlementAccount, settled);
-    }
-
-
     public IOUState withSettled() {
-        return new IOUState(amount, lender, borrower, linearId, novatedAmount, novatedCurrency, settlementAccount, true);
+        return new IOUState(amount, lender, borrower, linearId, true);
+    }
+
+    public IOUState withNewAmount(Amount newAmount) {
+        return new IOUState(newAmount, lender, borrower, linearId, settled);
     }
 
     public IOUState withNewLender(Party newLender) {
-        return new IOUState(amount, newLender, borrower, linearId, novatedAmount, novatedCurrency, settlementAccount,settled);
+        return new IOUState(amount, newLender, borrower, linearId, settled);
     }
 
 //    @Override

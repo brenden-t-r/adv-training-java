@@ -2,8 +2,11 @@ package com.template.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
 import com.google.common.collect.ImmutableList;
+import com.r3.corda.lib.tokens.contracts.types.TokenType;
+import com.r3.corda.lib.tokens.money.FiatCurrency;
 import com.template.contracts.IOUContract;
 import com.template.states.IOUState;
+import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.ContractState;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.contracts.UniqueIdentifier;
@@ -18,7 +21,9 @@ import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
 
+import java.math.BigDecimal;
 import java.security.PublicKey;
+import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -65,8 +70,8 @@ public class IOUSettleFlow {
             TransactionBuilder builder = new TransactionBuilder(notary);
             builder.addInputState(stateToSettle);
             builder.addOutputState(state
-                    .withNovatedAmount(CURRENCY, novatedAmount)
-                    .withSettlementAccount(settlementAccount), IOUContract.IOU_CONTRACT_ID);
+                            .withNewAmount(new Amount<>(novatedAmount.longValue(), FiatCurrency.Companion.getInstance(CURRENCY))),
+                    IOUContract.IOU_CONTRACT_ID);
             List<Party> requiredSigners = ImmutableList.of(
                     state.getLender(), state.getBorrower(), fxOracle);
             builder.addCommand(new IOUContract.Commands.Novate(CURRENCY, fxRate),
@@ -89,7 +94,7 @@ public class IOUSettleFlow {
              */
             IOUState novatedIOU = (IOUState)novatedTx.getTx().getOutputStates().get(0);
             String transactionId = getServiceHub().cordaService(OffLedgerPaymentRailService.class).makePayment(
-                    novatedIOU.getSettlementAccount(), novatedIOU.getNovatedAmount()
+                    settlementAccount, novatedAmount
             );
 
             /*
@@ -101,7 +106,7 @@ public class IOUSettleFlow {
             builder.addOutputState(novatedIOU.withSettled(), IOUContract.IOU_CONTRACT_ID);
             requiredSigners = ImmutableList.of(
                     state.getLender(), state.getBorrower(), settlerOracle);
-            builder.addCommand(new IOUContract.Commands.Settle(transactionId),
+            builder.addCommand(new IOUContract.Commands.Settle(transactionId, novatedAmount, CURRENCY, settlementAccount),
                     requiredSigners.stream().map(it -> it.getOwningKey()).collect(Collectors.toList()));
             builder.verify(getServiceHub());
             ptx = getServiceHub().signInitialTransaction(builder);

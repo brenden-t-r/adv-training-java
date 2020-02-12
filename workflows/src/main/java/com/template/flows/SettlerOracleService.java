@@ -31,14 +31,13 @@ public class SettlerOracleService extends SingletonSerializeAsToken {
     }
 
     public TransactionSignature sign(SignedTransaction stx) throws FilteredTransactionVerificationException {
-        IOUState iouState = (IOUState) stx.getTx().getOutputs().get(0).getData();
         Command command = stx.getTx().getCommands().get(0);
 
         if (command.getValue().getClass().equals(IOUContract.Commands.Settle.class)) {
             IOUContract.Commands.Settle settle =
                     (IOUContract.Commands.Settle)command.getValue();
 
-            if (query(settle.getTransactionId(), iouState.getNovatedAmount(), iouState.getSettlementAccount())) {
+            if (query(settle.getTransactionId(), settle.getNovatedAmount(), settle.getSettlementAccount())) {
                 return serviceHub.createSignature(stx, myKey);
             } else {
                 throw new IllegalArgumentException("Invalid transaction.");

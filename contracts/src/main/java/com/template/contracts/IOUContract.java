@@ -35,13 +35,31 @@ public class IOUContract implements Contract {
 
         class Settle implements Commands{
             String transactionId;
+            Double novatedAmount;
+            String novatedCurrency;
+            String settlementAccount;
 
-            public Settle(String transactionId) {
+            public Settle(String transactionId, Double novatedAmount, String novatedCurrency, String settlementAccount) {
                 this.transactionId = transactionId;
+                this.novatedAmount = novatedAmount;
+                this.novatedCurrency = novatedCurrency;
+                this.settlementAccount = settlementAccount;
             }
 
             public String getTransactionId() {
                 return transactionId;
+            }
+
+            public Double getNovatedAmount() {
+                return novatedAmount;
+            }
+
+            public String getNovatedCurrency() {
+                return novatedCurrency;
+            }
+
+            public String getSettlementAccount() {
+                return settlementAccount;
             }
         }
 
