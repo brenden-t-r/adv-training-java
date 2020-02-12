@@ -18,14 +18,13 @@ import java.util.List;
 import java.util.UUID;
 
 @BelongsToContract(IOUContract.class)
-public class IOUState implements LinearState {
+public class IOUState implements QueryableState, LinearState {
 
     public final Amount<TokenType> amount;
     public final Party lender;
     public final Party borrower;
     private final UniqueIdentifier linearId;
     private final Boolean settled;
-
 
     // Private constructor used only for copying a State object
     @ConstructorForDeserialization
@@ -84,20 +83,20 @@ public class IOUState implements LinearState {
         return new IOUState(amount, newLender, borrower, linearId, settled);
     }
 
-//    @Override
-//    public PersistentState generateMappedObject(MappedSchema schema) {
-//        if (schema instanceof IOUCustomSchema) {
-//            return new IOUCustomSchema.PersistentIOU(linearId.getId(), lender.getName().toString(),
-//                    borrower.getName().toString(), amount.getQuantity());
-//        } else{
-//            throw new IllegalArgumentException("Unrecognised schema " + schema);
-//        }
-//    }
-//
-//    @Override
-//    public Iterable<MappedSchema> supportedSchemas() {
-//        return ImmutableList.of(new IOUCustomSchema());
-//    }
+    @Override
+    public PersistentState generateMappedObject(MappedSchema schema) {
+        if (schema instanceof IOUCustomSchema) {
+            return new IOUCustomSchema.PersistentIOU(linearId.getId(), lender.getName().toString(),
+                    borrower.getName().toString(), amount.getQuantity(), settled);
+        } else{
+            throw new IllegalArgumentException("Unrecognised schema " + schema);
+        }
+    }
+
+    @Override
+    public Iterable<MappedSchema> supportedSchemas() {
+        return ImmutableList.of(new IOUCustomSchema());
+    }
 
 }
 

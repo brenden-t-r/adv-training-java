@@ -19,17 +19,18 @@ public class IOUCustomSchema extends MappedSchema {
     @Entity
     @Table
     public static class PersistentIOU extends PersistentState {
-        @Column(nullable = false)
-        UUID linearId;
+        @Column(nullable = false) UUID linearId;
         @Column(nullable = false) String lender;
         @Column(nullable = false) String borrower;
         @Column(nullable = false) Long amount;
+        @Column(nullable = false) Boolean settled;
 
-        public PersistentIOU(UUID linearId, String lender, String borrower, Long amount) {
+        public PersistentIOU(UUID linearId, String lender, String borrower, Long amount, Boolean settled) {
             this.linearId = linearId;
             this.lender = lender;
             this.borrower = borrower;
             this.amount = amount;
+            this.settled = settled;
         }
 
         public PersistentIOU() {
@@ -37,6 +38,7 @@ public class IOUCustomSchema extends MappedSchema {
             this.lender = null;
             this.borrower = null;
             this.amount = 0L;
+            this.settled = false;
         }
 
         public UUID getLinearId() {
@@ -55,5 +57,8 @@ public class IOUCustomSchema extends MappedSchema {
             return amount;
         }
 
+        public Boolean getSettled() {
+            return settled;
+        }
     }
 }
