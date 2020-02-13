@@ -35,7 +35,7 @@ public class StateAndContractExercises {
      * -- In this way, we could potentially have multiple Schema definitions.
      * -- [supportedSchemas] simply returns a list of schemas supported by this QueryableState.
      */
-    //@Test
+    @Test
     public void implementQueryableStateOnIOU() {
         assert(QueryableState.class.isAssignableFrom(IOUState.class));
     }
@@ -58,7 +58,7 @@ public class StateAndContractExercises {
      * of the [inputs] matches that of the [outputs] (i.e. two IOU's of 5 can be merged to 1 IOU of quantity 10).
      */
     @Test
-    public void stateGrouingTest() {
+    public void stateGroupingTest() {
         IOUState token1 = new IOUState(new Amount(50, new IOUToken("IOU_TOKEN", 2)), ALICE.getParty(), BOB.getParty());
         IOUState token2 = new IOUState(new Amount(100, new IOUToken("IOU_TOKEN", 2)), ALICE.getParty(), BOB.getParty());
         IOUState token3 = new IOUState(new Amount(100, new IOUToken("DIFFERENT_TOKEN", 2)), ALICE.getParty(), BOB.getParty());
