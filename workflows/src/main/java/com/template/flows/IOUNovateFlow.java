@@ -32,7 +32,7 @@ public class IOUNovateFlow {
         String settlementAccount;
         String settlementCurrency;
 
-        Initiator(StateAndRef stateToSettle, String settlementCurrency, String settlementAccount) {
+        public Initiator(StateAndRef stateToSettle, String settlementCurrency, String settlementAccount) {
             this.stateToSettle = stateToSettle;
             this.settlementCurrency = settlementCurrency;
             this.settlementAccount = settlementAccount;

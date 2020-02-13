@@ -49,10 +49,9 @@ public class IOUSettleFlow {
             /*
              Make offledger payment
              */
-            String transactionId = getServiceHub()
-                    .cordaService(OffLedgerPaymentRailService.class)
-                    .makePayment(settlementAccount, novatedIOU.amount.toDecimal().doubleValue()
-            );
+            String transactionId = subFlow(new OffLedgerPaymentFlow(
+                    settlementAccount, novatedIOU.getAmount().toDecimal().doubleValue()
+            ));
 
             /*
             Settle

@@ -2,10 +2,7 @@ package com.template;
 
 import com.google.common.collect.ImmutableList;
 import com.r3.corda.lib.tokens.contracts.types.TokenType;
-import com.r3.corda.lib.tokens.money.FiatCurrency;
-import com.template.flows.ExchangeRateOracle;
-import com.template.flows.IOUIssueFlow;
-import com.template.flows.IOUSettleFlow;
+import com.template.flows.*;
 import com.template.states.IOUState;
 import com.template.states.IOUToken;
 import net.corda.core.contracts.Amount;
@@ -55,36 +52,43 @@ public class SettlerExercises {
         network.stopNodes();
     }
 
-    /*
-    Exercise 1 -> Novate IOUState
-
-    Exercise 2 -> Make offledger payment
-    Update OffLedgerPaymentRail service?
-
-    Exercise 3 -> Verify payment with settler oracle
-    Update SettlerOracleService
-
-    Optional Exercise 4 -> Implment IOUSettleFlow using subflows from previous exercises
-     */
-
     @Test
-    public void implementIOUNovateFlow() {
-        fail();
+    public void implementIOUNovateFlow() throws ExecutionException, InterruptedException {
+        // Create an IOU between party A and B using IOUToken
+        IOUState state = new IOUState(
+                new Amount<TokenType>(100L, new IOUToken("CUSTOM_TOKEN", 0)),
+                a.getInfo().getLegalIdentities().get(0),
+                b.getInfo().getLegalIdentities().get(0));
+
+        Future<SignedTransaction> issueFuture = a.startFlow(new IOUIssueFlow.InitiatorFlow(state));
+        network.runNetwork();
+        SignedTransaction signedTx = issueFuture.get();
+
+        // Novate the IOU to be in terms of USD TokenType
+        StateAndRef<IOUState> stateAndRef = vaultQuery(((IOUState)signedTx.getTx().getOutputStates().get(0)).getLinearId());
+        Future<SignedTransaction> future = a.startFlow(new IOUNovateFlow.Initiator(stateAndRef, "USD", "ABCD1234"));
+        network.runNetwork();
+        SignedTransaction stx = future.get();
+
+        assertEquals(1, signedTx.getTx().getOutputs().size());
+        IOUState output = (IOUState) stx.getTx().getOutputStates().get(0);
+        assertEquals(150, output.getAmount().getQuantity());
+        assertEquals("USD", output.getAmount().getToken().getTokenIdentifier());
+        assertEquals(false, output.getSettled().booleanValue());
+        assertEquals(2, stx.getSigs().size());
     }
 
     @Test
-    public void implementOffLedgerPaymentFlow() {
-        fail();
+    public void implementOffLedgerPaymentFlow() throws ExecutionException, InterruptedException {
+        Future<String> issueFuture = a.startFlow(new OffLedgerPaymentFlow("ABCD1234", 300.0));
+        network.runNetwork();
+        String transactionId = issueFuture.get();
+
+        assertEquals("TEST_TRANSACTION_ID_1234", transactionId);
     }
 
     @Test
-    public void implementIOUVerifySettlementFlow() {
-        fail();
-    }
-
-    @Test
-    public void implmentIOUSettleFlow() throws ExecutionException, InterruptedException {
-
+    public void implementIOUVerifySettlementFlow() throws ExecutionException, InterruptedException {
         IOUState state = new IOUState(
                 new Amount<TokenType>(100L, new IOUToken("CUSTOM_TOKEN", 0)),
                 a.getInfo().getLegalIdentities().get(0),
