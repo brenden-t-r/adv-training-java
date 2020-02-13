@@ -39,7 +39,7 @@ public class IOUSettleFlow {
              Novate IOU
              */
             SignedTransaction oracleSignedTx = subFlow(new IOUNovateFlow.Initiator(
-                    stateToSettle, settlementCurrency, settlementAccount
+                    stateToSettle, settlementCurrency
             ));
             List<FlowSession> sessions = createCounterpartySessions(oracleSignedTx);
             oracleSignedTx = subFlow(new CollectSignaturesFlow(oracleSignedTx, sessions));

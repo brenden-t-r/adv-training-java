@@ -29,13 +29,11 @@ public class IOUNovateFlow {
     public static class Initiator  extends FlowLogic<SignedTransaction> {
 
         StateAndRef stateToSettle;
-        String settlementAccount;
         String settlementCurrency;
 
-        public Initiator(StateAndRef stateToSettle, String settlementCurrency, String settlementAccount) {
+        public Initiator(StateAndRef stateToSettle, String settlementCurrency) {
             this.stateToSettle = stateToSettle;
             this.settlementCurrency = settlementCurrency;
-            this.settlementAccount = settlementAccount;
         }
 
         @Suspendable

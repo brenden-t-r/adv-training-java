@@ -66,7 +66,7 @@ public class SettlerExercises {
 
         // Novate the IOU to be in terms of USD TokenType
         StateAndRef<IOUState> stateAndRef = vaultQuery(((IOUState)signedTx.getTx().getOutputStates().get(0)).getLinearId());
-        Future<SignedTransaction> future = a.startFlow(new IOUNovateFlow.Initiator(stateAndRef, "USD", "ABCD1234"));
+        Future<SignedTransaction> future = a.startFlow(new IOUNovateFlow.Initiator(stateAndRef, "USD"));
         network.runNetwork();
         SignedTransaction stx = future.get();
 
