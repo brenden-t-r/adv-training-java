@@ -46,19 +46,18 @@ public class AdvancedFlowConceptExercises {
 
     /**
      * TODO: Implement the [createFilteredTransaction] method in [ExchangeRateOracleFlow].
+     * @see ExchangeRateOracleFlow
      * Hint:
      * - Use the [buildFilteredTransaction] from the [SignedTransaction] argument passed into the method.
-     * - [buildFilteredTransaction] takes a [Predicate] lambda argument.
-     * -- Within the [Predicate] a simple when/is block allows you to filter to only the transaction components
-     * that you want to add.
-     * -- In our case, we only want the Oracle to see Command of which the Oracle is a required signer of.
-     * -- Example usage:
-     *      Predicate {
-     *          when (it) {
-     *              is Command<*> -> // boolean expression
-     *              else -> false
-     *          }
-     *      }
+     * - [buildFilteredTransaction] takes a lambda argument.
+     * -- You can form a lambda like this:
+     * stx.BuildFilteredTransaction(it -> { ..put conditions and return true and false here.. }
+     * -- Each element in our transaction (ex. States, Contracts, Commands, etc..) will be passed
+     * into this lambda. We will add conditions in our lambda and return true or false based
+     * on those conditions. If the lambda returns true, that element will be included in the
+     * [FilteredTransaction], otherwise it will be filtered out.
+     * -- In our case, the only element from our transaction that we want to expose to the Oracle
+     * is the Exchange Command.
      */
     @Test
     public void filteredTransaction() {

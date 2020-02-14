@@ -64,6 +64,7 @@ public class OracleExercises {
 
     /**
      * TODO: Implement a [query] method for the [ExchangeRateOracleService].
+     * @see ExchangeRateOracleService
      * Hint:
      * - The query method must take a [String] currency code argument and return a [Double] representing
      * the exchange rate received from the off-ledger data source.
@@ -84,6 +85,7 @@ public class OracleExercises {
 
     /**
      * TODO: Implement a [sign] method for the [ExchangeRateOracleService].
+     * @see ExchangeRateOracleService
      * Hint:
      * - The sign method must take a [FilteredTransaction] argument and return the oracle's signature
      * as a [TransactionSignature].
@@ -143,15 +145,17 @@ public class OracleExercises {
 
     /**
      * TODO: Implement the [ExchangeRateOracleFlow].
+     * @see ExchangeRateOracleFlow
      * Hint:
-     * - In this flow, we will take a partially signed transaction as argument, and utilize
+     * In this flow, we will take a partially signed transaction as argument, and utilize
      * our [ExchangeRateOracleService] to provide the exchange rate. This will be allow us to
      * conveniently subFlow this [ExchangeRateOracleFlow] within other flows that require it.
+     *
      * - First, we need to get the Oracle [Party] identity using the [serviceHub]'s networkMapCache.
      * - Then, we need to create a [FilteredTransaction] in order to preserve confidentiality
      * and only provide the Oracle with visibility to the exchange rate portion of the transaction.
      * This is handy and still enables us to gather and verify the Oracle's signature.
-     * -- Utilize the [createFilteredTransaction] helper function.
+     * (Utilize the [createFilteredTransaction] helper function.)
      * - Finally we need to require a signature from the Oracle.
      * -- To do this, simply subFlow the [SignExchangeRate] flow.
      * -- Once we have the returned signature, just add it to the transaction with the

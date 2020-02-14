@@ -230,16 +230,6 @@ public class TokenSdkExercises {
         NonFungibleToken nonFungibleToken = createNonFungibleFixedToken(partyB, partyB,
                 a.getServices().getCordappProvider().getContractAttachmentID(IOUContract.IOU_CONTRACT_ID));
 
-//        TokenSdkExamples.ExampleFixedToken token = new TokenSdkExamples.ExampleFixedToken("CUSTOMTOKEN", 0);
-//        IssuedTokenType issuedTokenType = new IssuedTokenType(partyA, token);
-//        FungibleToken fungibleToken =  new FungibleToken(new Amount<>(1000L, issuedTokenType), partyA,
-//                a.getServices().getCordappProvider().getContractAttachmentID(IOUContract.IOU_CONTRACT_ID));
-//
-//        IssuedTokenType issuedTokenType2 = new IssuedTokenType(partyB, token);
-//        NonFungibleToken nonFungibleToken = new NonFungibleToken(issuedTokenType2, partyB, new UniqueIdentifier(),
-//                a.getServices().getCordappProvider().getContractAttachmentID(IOUContract.IOU_CONTRACT_ID));
-
-
         Future<SignedTransaction> fungibleFuture = a.startFlow(new IssueTokensFlow(fungibleToken));
         network.runNetwork();
         SignedTransaction stx = fungibleFuture.get();
