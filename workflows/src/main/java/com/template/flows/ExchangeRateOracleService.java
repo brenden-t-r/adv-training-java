@@ -26,42 +26,11 @@ public class ExchangeRateOracleService extends SingletonSerializeAsToken {
     }
 
     public Double query(String currencyCode) {
-        // Query external data source and return result
-        // In practice this would be an external call to a real service
-        if (currencyCode.equals("USD")) {
-            return 1.5;
-        } else if (currencyCode.equals("GBP")) {
-            return 1.8;
-        } else throw new IllegalArgumentException("Unsupported currency.");
+        return null;
     }
 
     public TransactionSignature sign(FilteredTransaction ftx) throws FilteredTransactionVerificationException {
-        ftx.verify(); // Check the partial Merkle tree is valid.
-
-        if (ftx.checkWithFun(this::isCommandCorrect)){
-            return serviceHub.createSignature(ftx, myKey);
-        } else throw new IllegalArgumentException("Invalid transaction.");
-    }
-
-    private Boolean isCommandCorrect(Object elem) {
-        if (elem instanceof Command) {
-            Command command = ((Command) elem);
-            if (command.getValue().getClass().equals(IOUContract.Commands.Exchange.class)) {
-                IOUContract.Commands.Exchange exchange =
-                        (IOUContract.Commands.Exchange)command.getValue();
-                return command.getSigners().contains(myKey) &&
-                        query(exchange.getCurrency()).equals(exchange.getRate());
-            } else if (command.getValue().getClass().equals(IOUContract.Commands.Novate.class)) {
-                IOUContract.Commands.Novate novate =
-                        (IOUContract.Commands.Novate)command.getValue();
-                return command.getSigners().contains(myKey) &&
-                        query(novate.getCurrency()).equals(novate.getRate());
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
+        return  null;
     }
 
 }

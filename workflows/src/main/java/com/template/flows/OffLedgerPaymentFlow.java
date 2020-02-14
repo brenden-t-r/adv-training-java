@@ -22,9 +22,7 @@ public class OffLedgerPaymentFlow extends FlowLogic<String> {
     @Suspendable
     @Override
     public String call() throws FlowException {
-        return getServiceHub()
-                .cordaService(OffLedgerPaymentRailService.class)
-                .makePayment(recipientAccountNumber, paymentAmount);
+        return "";
     }
 }
 

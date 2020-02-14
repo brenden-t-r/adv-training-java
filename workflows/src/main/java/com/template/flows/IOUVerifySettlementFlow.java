@@ -40,35 +40,14 @@ public class IOUVerifySettlementFlow {
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
-            // Get notary identity
-            final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
-
             // Get oracle identity
-            Party settlerOracle = Objects.requireNonNull(getServiceHub().getNetworkMapCache().getNodeByLegalName(
-                    new CordaX500Name("SettlerOracleService", "New York", "US")
-            )).getLegalIdentities().get(0);
+            CordaX500Name oracleName = new CordaX500Name(
+                    "SettlerOracleService", "New York","US");
 
-            IOUState state = stateToSettle.getState().getData();
-
-            TransactionBuilder builder = new TransactionBuilder(notary);
-            builder.addInputState(stateToSettle);
-            builder.addOutputState(state.withSettled(), IOUContract.IOU_CONTRACT_ID);
-            List<Party> requiredSigners = ImmutableList.of(
-                    state.getLender(), state.getBorrower(), settlerOracle);
-            builder.addCommand(
-                    new IOUContract.Commands.Settle(
-                        transactionId, state.amount.toDecimal().doubleValue(),
-                        state.amount.getToken().getTokenIdentifier(), settlementAccount),
-                    requiredSigners.stream().map(Party::getOwningKey).collect(Collectors.toList())
+            // Placeholder code to avoid type error when running the tests. Remove before starting the flow task!
+            return getServiceHub().signInitialTransaction(
+                    new TransactionBuilder(null)
             );
-            builder.verify(getServiceHub());
-            SignedTransaction ptx = getServiceHub().signInitialTransaction(builder);
-
-            // Get Settlement oracle signature and add to SignedTransaction
-            TransactionSignature oracleSignature = subFlow(
-                    new SettlerOracle.SignOffLedgerPayment(settlerOracle, ptx));
-
-            return ptx.withAdditionalSignature(oracleSignature);
         }
 
     }

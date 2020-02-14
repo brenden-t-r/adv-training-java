@@ -35,24 +35,17 @@ public class Controller {
 
     @GetMapping(value = "/getIOUs")
     public List<StateAndRef<IOUState>> getIOUs() {
-        return proxy.vaultQuery(IOUState.class).getStates();
+        return null;
     }
 
     @GetMapping(value = "/getIOUs/linearId/{linearId}")
     public List<StateAndRef<IOUState>> getIousWithLinearId(@PathVariable String linearId) {
-        UniqueIdentifier linearIdentifier = UniqueIdentifier.Companion.fromString(linearId);
-        QueryCriteria criteria = new LinearStateQueryCriteria(
-                null, ImmutableList.of(linearIdentifier),
-                Vault.StateStatus.UNCONSUMED, null);
-        return proxy.vaultQueryByCriteria(criteria, IOUState.class).getStates();
+        return null;
     }
 
     @GetMapping(value = "/getIOUs/greaterThan/{amount}")
     public List<StateAndRef<IOUState>> getIOUsWithAmountGreaterThan(@PathVariable Long amount) throws NoSuchFieldException {
-        FieldInfo field = getField("amount", IOUCustomSchema.PersistentIOU.class);
-        CriteriaExpression expression = Builder.greaterThan(field, amount);
-        QueryCriteria criteria = new VaultCustomQueryCriteria(expression);
-        return proxy.vaultQueryByCriteria(criteria, IOUState.class).getStates();
+        return null;
     }
 
 }

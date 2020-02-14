@@ -39,32 +39,14 @@ public class IOUNovateFlow {
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
-            // Get notary identity
-            final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
+            // Get oracle identity
+            CordaX500Name oracleName = new CordaX500Name(
+                    "ExchangeRateOracleService", "New York","US");
 
-            // Get oracle identities
-            Party fxOracle = Objects.requireNonNull(getServiceHub().getNetworkMapCache().getNodeByLegalName(
-                    new CordaX500Name("ExchangeRateOracleService", "New York", "US")
-            )).getLegalIdentities().get(0);
-
-            IOUState state = (IOUState)stateToSettle.getState().getData();
-
-            Double fxRate = getServiceHub().cordaService(ExchangeRateOracleService.class).query(settlementCurrency);
-            Double novatedAmount = fxRate * state.getAmount().getQuantity();
-            TransactionBuilder builder = new TransactionBuilder(notary);
-            builder.addInputState(stateToSettle);
-            builder.addOutputState(state
-                            .withNewAmount(new Amount<>(novatedAmount.longValue(), FiatCurrency.Companion.getInstance(settlementCurrency))),
-                    IOUContract.IOU_CONTRACT_ID);
-            List<Party> requiredSigners = ImmutableList.of(
-                    state.getLender(), state.getBorrower(), fxOracle);
-            builder.addCommand(new IOUContract.Commands.Novate(settlementCurrency, fxRate),
-                    requiredSigners.stream().map(Party::getOwningKey).collect(Collectors.toList()));
-            builder.verify(getServiceHub());
-            SignedTransaction ptx = getServiceHub().signInitialTransaction(builder);
-
-            // Get FxRate oracle signature and add to SignedTransaction
-            return subFlow(new ExchangeRateOracleFlow(ptx));
+            // Placeholder code to avoid type error when running the tests. Remove before starting the flow task!
+            return getServiceHub().signInitialTransaction(
+                    new TransactionBuilder(null)
+            );
         }
     }
 

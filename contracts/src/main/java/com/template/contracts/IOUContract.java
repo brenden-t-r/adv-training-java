@@ -176,27 +176,6 @@ public class IOUContract implements Contract {
 
             requireThat(require -> {
 
-                List<InOutGroup<IOUState, String>> inOutGroups = tx
-                        .groupStates(IOUState.class, (it) ->
-                                it.getAmount().getToken().getTokenIdentifier());
-
-                for (InOutGroup<IOUState, String> inOutGroup : inOutGroups) {
-                    inOutGroup.getGroupingKey();
-                    inOutGroup.getInputs();
-                    inOutGroup.getOutputs();
-
-                    Long inputTotal = 0L;
-                    Long outputTotal = 0L;
-                    for (IOUState input : inOutGroup.getInputs()) {
-                        inputTotal += input.getAmount().getQuantity();
-                    }
-                    for (IOUState output : inOutGroup.getOutputs()) {
-                        outputTotal += output.getAmount().getQuantity();
-                    }
-
-                    require.using("Output total must equal input total for each token identifier", (inputTotal == outputTotal));
-                }
-
                 return null;
 
             });

@@ -39,18 +39,9 @@ public class DeliveryVersusPaymentTokenFlow extends FlowLogic<SignedTransaction>
 
     @Override
     public SignedTransaction call() {
-        Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
-        IssuedTokenType issuedTokenType = new IssuedTokenType(getOurIdentity(), ourpayment);
-        Amount<TokenType> ourPaymentAmount = new Amount<>(1000, issuedTokenType);
-
-        QueryCriteria queryCriteria = QueryUtilitiesKt.tokenAmountWithIssuerCriteria(ourpayment, getOurIdentity());
-        TransactionBuilder builder = new TransactionBuilder(notary);
-        builder = MoveTokensUtilitiesKt.addMoveFungibleTokens(
-                builder, getServiceHub(), ourPaymentAmount, counterParty, getOurIdentity(), queryCriteria);
-        builder = MoveTokensUtilitiesKt.addMoveNonFungibleTokens(
-                builder, getServiceHub(), counterPartyAsset, getOurIdentity()
+        // Placeholder code to avoid type error when running the tests. Remove before starting the flow task!
+        return getServiceHub().signInitialTransaction(
+                new TransactionBuilder(null)
         );
-
-        return getServiceHub().signInitialTransaction(builder);
     }
 }
