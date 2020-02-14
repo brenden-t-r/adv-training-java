@@ -1,10 +1,10 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="StateAndContractExercises" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="Run Oracle Exercises" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
-      <option name="externalProjectPath" value="$PROJECT_DIR$/contracts" />
+      <option name="externalProjectPath" value="$PROJECT_DIR$/workflows" />
       <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="" />
+      <option name="scriptParameters" value="--tests OracleExercises*" />
       <option name="taskDescriptions">
         <list />
       </option>

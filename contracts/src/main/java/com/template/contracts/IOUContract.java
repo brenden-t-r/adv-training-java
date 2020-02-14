@@ -33,6 +33,53 @@ public class IOUContract implements Contract {
         class Transfer extends TypeOnlyCommandData implements Commands{}
         class Merge extends TypeOnlyCommandData implements Commands{}
 
+        class Settle implements Commands{
+            String transactionId;
+            Double novatedAmount;
+            String novatedCurrency;
+            String settlementAccount;
+
+            public Settle(String transactionId, Double novatedAmount, String novatedCurrency, String settlementAccount) {
+                this.transactionId = transactionId;
+                this.novatedAmount = novatedAmount;
+                this.novatedCurrency = novatedCurrency;
+                this.settlementAccount = settlementAccount;
+            }
+
+            public String getTransactionId() {
+                return transactionId;
+            }
+
+            public Double getNovatedAmount() {
+                return novatedAmount;
+            }
+
+            public String getNovatedCurrency() {
+                return novatedCurrency;
+            }
+
+            public String getSettlementAccount() {
+                return settlementAccount;
+            }
+        }
+
+        class Novate implements Commands{
+            String currency;
+            Double rate;
+            public Novate(String currency, Double rate) {
+                this.currency = currency;
+                this.rate = rate;
+            }
+
+            public String getCurrency() {
+                return currency;
+            }
+
+            public Double getRate() {
+                return rate;
+            }
+        }
+
         class Exchange implements Commands{
             String currency;
             Double rate;
@@ -108,8 +155,6 @@ public class IOUContract implements Contract {
                 IOUState outputState = tx.outputsOfType(IOUState.class).get(0);
                 IOUState checkOutputState = outputState.withNewLender(inputState.getLender());
 
-                require.using("Only the lender property may change.",
-                        checkOutputState.amount.equals(inputState.amount) && checkOutputState.getLinearId().equals(inputState.getLinearId()) && checkOutputState.borrower.equals(inputState.borrower) && checkOutputState.paid.equals(inputState.paid));
                 require.using("The lender property must change in a transfer.", !outputState.lender.getOwningKey().equals(inputState.lender.getOwningKey()));
 
                 List<PublicKey> listOfPublicKeys = new ArrayList<>();
@@ -130,27 +175,6 @@ public class IOUContract implements Contract {
         else if (commandData.equals(new Commands.Merge())) {
 
             requireThat(require -> {
-
-                List<InOutGroup<IOUState, String>> inOutGroups = tx
-                        .groupStates(IOUState.class, (it) ->
-                                it.getAmount().getToken().getTokenIdentifier());
-
-                for (InOutGroup<IOUState, String> inOutGroup : inOutGroups) {
-                    inOutGroup.getGroupingKey();
-                    inOutGroup.getInputs();
-                    inOutGroup.getOutputs();
-
-                    Long inputTotal = 0L;
-                    Long outputTotal = 0L;
-                    for (IOUState input : inOutGroup.getInputs()) {
-                        inputTotal += input.getAmount().getQuantity();
-                    }
-                    for (IOUState output : inOutGroup.getOutputs()) {
-                        outputTotal += output.getAmount().getQuantity();
-                    }
-
-                    require.using("Output total must equal input total for each token identifier", (inputTotal == outputTotal));
-                }
 
                 return null;
 

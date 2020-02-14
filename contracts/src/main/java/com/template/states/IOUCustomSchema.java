@@ -10,50 +10,15 @@ import javax.persistence.Table;
 import java.util.UUID;
 
 
-public class IOUCustomSchema extends MappedSchema {
+public class IOUCustomSchema {
 
     public IOUCustomSchema() {
-        super(IOUCustomSchema.class, 1, ImmutableList.of(PersistentIOU.class));
+
     }
 
     @Entity
     @Table
-    public static class PersistentIOU extends PersistentState {
-        @Column(nullable = false)
-        UUID linearId;
-        @Column(nullable = false) String lender;
-        @Column(nullable = false) String borrower;
-        @Column(nullable = false) Long amount;
-
-        public PersistentIOU(UUID linearId, String lender, String borrower, Long amount) {
-            this.linearId = linearId;
-            this.lender = lender;
-            this.borrower = borrower;
-            this.amount = amount;
-        }
-
-        public PersistentIOU() {
-            this.linearId = null;
-            this.lender = null;
-            this.borrower = null;
-            this.amount = 0L;
-        }
-
-        public UUID getLinearId() {
-            return linearId;
-        }
-
-        public String getLender() {
-            return lender;
-        }
-
-        public String getBorrower() {
-            return borrower;
-        }
-
-        public Long getAmount() {
-            return amount;
-        }
+    public static class PersistentIOU {
 
     }
 }

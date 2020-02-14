@@ -18,26 +18,26 @@ import java.util.List;
 import java.util.UUID;
 
 @BelongsToContract(IOUContract.class)
-public class IOUState implements QueryableState, LinearState {
+public class IOUState implements LinearState {
 
     public final Amount<TokenType> amount;
     public final Party lender;
     public final Party borrower;
-    public final Amount<TokenType> paid;
     private final UniqueIdentifier linearId;
+    private final Boolean settled;
 
     // Private constructor used only for copying a State object
     @ConstructorForDeserialization
-    private IOUState(Amount<TokenType> amount, Party lender, Party borrower, Amount<TokenType> paid, UniqueIdentifier linearId){
+    public IOUState(Amount<TokenType> amount, Party lender, Party borrower, UniqueIdentifier linearId, Boolean settled) {
         this.amount = amount;
         this.lender = lender;
         this.borrower = borrower;
-        this.paid = paid;
         this.linearId = linearId;
+        this.settled = settled;
     }
 
     public IOUState(Amount<TokenType> amount, Party lender, Party borrower) {
-        this(amount, lender, borrower, new Amount<>(0, amount.getToken()), new UniqueIdentifier());
+        this(amount, lender, borrower, new UniqueIdentifier(), false);
     }
 
     public Amount<TokenType> getAmount() {
@@ -52,8 +52,8 @@ public class IOUState implements QueryableState, LinearState {
         return borrower;
     }
 
-    public Amount<TokenType> getPaid() {
-        return paid;
+    public Boolean getSettled() {
+        return settled;
     }
 
     @Override
@@ -70,40 +70,18 @@ public class IOUState implements QueryableState, LinearState {
         return ImmutableList.of(lender, borrower);
     }
 
-    /**
-     * Helper methods for when building transactions for settling and transferring IOUs.
-     * - [pay] adds an amount to the paid property. It does no validation.
-     * - [withNewLender] creates a copy of the current state with a newly specified lender. For use when transferring.
-     * - [copy] creates a copy of the state using the internal copy constructor ensuring the LinearId is preserved.
-     */
-    public IOUState pay(Amount<TokenType> amountToPay) {
-        Amount<TokenType> newAmountPaid = this.paid.plus(amountToPay);
-        return new IOUState(amount, lender, borrower, newAmountPaid, linearId);
+
+    public IOUState withSettled() {
+        return new IOUState(amount, lender, borrower, linearId, true);
+    }
+
+    public IOUState withNewAmount(Amount newAmount) {
+        return new IOUState(newAmount, lender, borrower, linearId, settled);
     }
 
     public IOUState withNewLender(Party newLender) {
-        return new IOUState(amount, newLender, borrower, paid, linearId);
+        return new IOUState(amount, newLender, borrower, linearId, settled);
     }
-
-    public IOUState copy(Amount<TokenType> amount, Party lender, Party borrower, Amount<TokenType> paid) {
-        return new IOUState(amount, lender, borrower, paid, this.getLinearId());
-    }
-
-    @Override
-    public PersistentState generateMappedObject(MappedSchema schema) {
-        if (schema instanceof IOUCustomSchema) {
-            return new IOUCustomSchema.PersistentIOU(linearId.getId(), lender.getName().toString(),
-                    borrower.getName().toString(), amount.getQuantity());
-        } else{
-            throw new IllegalArgumentException("Unrecognised schema " + schema);
-        }
-    }
-
-    @Override
-    public Iterable<MappedSchema> supportedSchemas() {
-        return ImmutableList.of(new IOUCustomSchema());
-    }
-
 }
 
 

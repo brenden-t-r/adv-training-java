@@ -19,6 +19,7 @@ import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.InitiatingFlow;
 import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens;
 import net.corda.core.transactions.SignedTransaction;
+import net.corda.core.transactions.TransactionBuilder;
 
 @InitiatingFlow
 public class IOUTokenIssueFlow extends FlowLogic<SignedTransaction> {
@@ -31,18 +32,10 @@ public class IOUTokenIssueFlow extends FlowLogic<SignedTransaction> {
 
     @Override
     public SignedTransaction call() throws FlowException {
-        IssuedTokenType issuedTokenType = new IssuedTokenType(getOurIdentity(),
-                new IOUToken("CUSTOM_TOKEN", 0));
-        FungibleToken fungibleTokens = new FungibleToken(
-                new Amount<>(tokenAmount, issuedTokenType), getOurIdentity(),
-                getServiceHub().getCordappProvider().getContractAttachmentID(IOUContract.IOU_CONTRACT_ID)
+        // Placeholder code to avoid type error when running the tests. Remove before starting the flow task!
+        return getServiceHub().signInitialTransaction(
+                new TransactionBuilder(null)
         );
-        return subFlow(new IssueTokens(ImmutableList.of(fungibleTokens)));
-
-//        ALTERNATIVE SYNTAX
-//        Amount<TokenType> amount = AmountUtilitiesKt.amount(tokenAmount, iouToken);
-//        Amount<IssuedTokenType> issuedToken = AmountUtilitiesKt.issuedBy(amount, getOurIdentity());
-//        FungibleToken fungibleToken = TokenUtilitiesKt.heldBy(issuedToken, getOurIdentity());
     }
 }
 

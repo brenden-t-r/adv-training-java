@@ -1,16 +1,15 @@
 package com.template.contracts;
 
 import com.google.common.collect.ImmutableList;
-import com.template.states.IOUState;
-import com.template.states.IOUToken;
+import com.template.states.*;
 import net.corda.core.contracts.Amount;
 import net.corda.core.identity.CordaX500Name;
-import net.corda.core.node.ServiceHub.*;
 import net.corda.core.schemas.QueryableState;
 import net.corda.testing.core.TestIdentity;
 import net.corda.testing.node.MockServices;
 import static net.corda.testing.node.NodeTestUtils.ledger;
 import org.junit.Test;
+import net.corda.core.schemas.*;
 
 public class StateAndContractExercises {
     private final MockServices ledgerServices = new MockServices();
@@ -20,11 +19,16 @@ public class StateAndContractExercises {
 
     /**
      * TODO: Turn the [IOUState] into a [QueryableState].
+     * @see IOUState
+     * @see IOUCustomSchema
+     * @see QueryableState
+     * @see MappedSchema
+     * @see PersistentState
      * Hint:
      * - [QueryableState] implements [ContractState] and has two additional function requirements.
      * - Update the IOU State to implement the [QueryableState].
      * -- There will be compilation errors until we finish the remaining steps.
-     * - Create custom [MappedSchema] and [PersistentState] subclass implementations.
+     * - Create custom [MappedSchema] and [PersistentState] implementations within [IOUCustomSchema].
      * -- We need to create a custom implementation of the [MappedSchema] class.
      * -- Nest within our custom [MappedSchema] class, we will need a custom implementation of a [PersistentState].
      * -- This uses JPA (Java Persistence API) notation to define how the state will be stored in the database.
@@ -35,13 +39,14 @@ public class StateAndContractExercises {
      * -- In this way, we could potentially have multiple Schema definitions.
      * -- [supportedSchemas] simply returns a list of schemas supported by this QueryableState.
      */
-    //@Test
+    @Test
     public void implementQueryableStateOnIOU() {
         assert(QueryableState.class.isAssignableFrom(IOUState.class));
     }
 
     /**
      * TODO: Implement state grouping for the Merge command.
+     * @see IOUContract
      * Hint:
      * - Use State Grouping in the [verify] function of the [IOUContract] to validate a Merge operation.
      * - The [IOUState] has been updated to use a Token from the Token SDK instead of a Currency.
@@ -49,16 +54,16 @@ public class StateAndContractExercises {
      * - We just need to make sure the the [IOUState]'s [amount.token.tokenIdentifier] field matches for
      * any tokens that are being merged.
      * - First, we need to use the [groupStates] function of the [tx] object.
-     * -- Parametrize the groupStates function by the [IOUState] and [String] using the <IOUState, String> notation.
-     * This specifies that we are grouping [IOUState]s and the that grouping key is a [String]
-     * -- Within our groupStates {} clause, we need to specify the grouping key.
-     * In our case this will be the [amount.token.tokenIdentifier].
+     * -- [groupStates] takes as argument the [Class] that we are gouping and
+     * then and a lambda function that provides the grouping key.
+     * ex. groupStates(ClassToGroup.class, (it) -> it.getFieldToUseAsGroupingKey());
+     * -- In our case the grouping key will be the [amount.token.tokenIdentifier].
      * -- The return type from the [groupStates] function is a list of [InOutGroup].
-     * - Next, we'll loop through the [InOutGroup]s and include that the total amount quantity
-     * of the [inputs] matches that of the [outputs] (i.e. two IOU's of 5 can be merged to 1 IOU of quantity 10).
+     * - Next, we'll loop through the [InOutGroup]s and verify that the total amount of the
+     * [inputs] matches that of the [outputs] (i.e. two IOU's of 5 can be merged to 1 IOU of quantity 10).
      */
     @Test
-    public void stateGrouingTest() {
+    public void stateGroupingTest() {
         IOUState token1 = new IOUState(new Amount(50, new IOUToken("IOU_TOKEN", 2)), ALICE.getParty(), BOB.getParty());
         IOUState token2 = new IOUState(new Amount(100, new IOUToken("IOU_TOKEN", 2)), ALICE.getParty(), BOB.getParty());
         IOUState token3 = new IOUState(new Amount(100, new IOUToken("DIFFERENT_TOKEN", 2)), ALICE.getParty(), BOB.getParty());

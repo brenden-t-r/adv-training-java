@@ -4,14 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType;
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken;
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken;
-import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType;
 import com.r3.corda.lib.tokens.contracts.types.TokenType;
 import com.r3.corda.lib.tokens.workflows.flows.issue.IssueTokensFlow;
 import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens;
 import com.template.contracts.IOUContract;
 import com.template.flows.DeliveryVersusPaymentTokenFlow;
 import com.template.flows.IOUTokenIssueFlow;
-import com.template.states.IOUState;
 import com.template.states.TokenSdkExamples;
 import net.corda.core.contracts.*;
 import net.corda.core.identity.Party;
@@ -24,10 +22,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Signed;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -61,11 +55,13 @@ public class TokenSdkExercises {
 
     /**
      * TODO: Implement [ExampleFixedToken].
+     * @see com.template.states.TokenSdkExamples.ExampleFixedToken
      * Hint:
      * - Fixed Tokens need to extend the [TokenType] class from Token SDK.
      * - [TokenType] classes need to override two fields:
      * -- [tokenIdentifier], String identifying the token, used in contracts to token states are of the same type.
-     * -- [fractionDigits], Int defining the number of decimal digits (ex. 2 => 10.00)
+     * -- [fractionDigits], int defining the number of decimal digits (ex. 2 => 10.00)
+     * --- Use super() to call the inherited constructor.
      */
     @Test
     public void testCreateFixedToken() {
@@ -74,11 +70,12 @@ public class TokenSdkExercises {
 
     /**
      * TODO: Implement [ExampleEvolvableToken].
+     * @see com.template.states.TokenSdkExamples.ExampleEvolvableToken
      * Hint:
      * - Evolvable Tokens need to extend the [EvolvableTokenType] class from Token SDK.
-     * - [EvolvableTokenType] classes need to override three fields:
-     * -- [maintainers], List<Party> which specifies which parties will be notified when the token is updated.
-     * -- [fractionDigits], Int defining the number of decimal digits (ex. 2 => 10.00).
+     * - [EvolvableTokenType] classes need to override three methods:
+     * -- [getMaintainers], List<Party> which specifies which parties will be notified when the token is updated.
+     * -- [getFractionDigits], int defining the number of decimal digits (ex. 2 => 10.00).
      * -- [linearId] - remember that Evolvable Tokens have a linearId since they can evolve over time.
      * - In addition to these fields, we can have any number of additional fields like any other [LinearState].
      */
@@ -89,6 +86,7 @@ public class TokenSdkExercises {
 
     /**
      * TODO: Implement [createNonFungibleFixedToken] method.
+     * @see TokenSdkExamples
      * Hint:
      * - Tokens can be Fixed versus Evolvable, but also Fungible versus Non-fungible.
      * - For our method, we want to return a [NonFungibleToken] object containing an [ExampleFixedToken]
@@ -108,6 +106,7 @@ public class TokenSdkExercises {
 
     /**
      * TODO: Implement [createNonFungibleEvolvableToken] method.
+     * @see TokenSdkExamples
      * Hint:
      * - Now we want to create a [NonFungibleToken] containing an [ExampleEvolvableToken]
      * - This will be the same as in the previous exercise, except that since EvolvableTokens use
@@ -117,7 +116,7 @@ public class TokenSdkExercises {
      * displayTokenSize which will be the [fractionDigits] from our [ExampleEvolvableToken].
      * - The [LinearPointer] takes as parameter the linear Id of our [ExampleEvolvableToken]
      * and the class definition for the token type.
-     * -- Hint: You can use the [ExampleEvolvableToken::class.java] notation.
+     * -- Hint: You can use the [ExampleEvolvableToken.class] notation.
      */
     @Test
     public void testCreateNonFungibleEvolvableToken() {
@@ -131,6 +130,7 @@ public class TokenSdkExercises {
 
     /**
      * TODO: Implement [createFungibleFixedToken] method.
+     * @see TokenSdkExamples
      * Hint:
      * - Now we want to create a [FungibleToken] containing an [ExampleFixedToken]
      * - When creating a [FungibleToken] we need to supply an [Amount] of the [IssuedTokenType]
@@ -149,6 +149,7 @@ public class TokenSdkExercises {
 
     /**
      * TODO: Implement [createFungibleEvolvableToken] method.
+     * @see TokenSdkExamples
      * Hint:
      * - Now we want to create a [FungibleToken] containing an [ExampleEvolvableToken]
      * - Use the [createFungibleFixedToken] and [createNonFungibleEvolvableToken] methods as a guide here.
@@ -165,25 +166,8 @@ public class TokenSdkExercises {
     }
 
     /**
-     * TODO: Convert IOUState to be in terms of an Amount of Token SDK Tokens rather than Currency
-     * Hint:
-     *  -
-     */
-    @Test
-    public void hasIOUAmountFieldOfCorrectType() throws NoSuchFieldException {
-        // Does the amount field exist?
-        Field field = IOUState.class.getDeclaredField("amount");
-
-        // Is the amount field of the correct type?
-        assertEquals(field.getType(), Amount.class);
-
-        // Does the amount field have the correct paramerized type?
-        Type signature = ((ParameterizedType)field.getGenericType()).getActualTypeArguments()[0];
-        assertEquals(signature, TokenType.class);
-    }
-
-    /**
      * TODO: Implement [IOUTokenIssueFlow].
+     * @see IOUTokenIssueFlow
      * Hint:
      * - Now we know how to create and instantiate Fixed/Evolvable Fungible/Non-fungible Tokens,
      * the next step is to actually ISSUE them on the ledger as immutable facts.
@@ -193,7 +177,7 @@ public class TokenSdkExercises {
      * the Token SDK.
      * - The [IssueTokens] Flow simply takes as argument a list containing the [FungibleToken]s to
      * issue. In our case this will be a list containing our single [FungibleToken] instance.
-     * -- You can use the [listOf] Kotlin command to easily make a list.
+     * -- You can use the [ImmutableList.of] command to easily make a list.
      */
     @Test
     public void implementIOUTokenIssueFlow() throws ExecutionException, InterruptedException {
@@ -207,17 +191,21 @@ public class TokenSdkExercises {
 
     /**
      * TODO: Implement [DeliveryVersusPaymentTokenFlow].
+     * @see DeliveryVersusPaymentTokenFlow
+     * @see com.r3.corda.lib.tokens.workflows.utilities.QueryUtilitiesKt
+     * @see com.r3.corda.lib.tokens.workflows.flows.move.MoveTokensUtilitiesKt
      * Hint:
      * - This flow will implement a simple delivery versus payment use case to exchange two different
      * token types between two parties in an atomic transaction.
      * - First, we'll need to create a [TransactionBuilder] with a [Notary] identity.
-     * - Then, we need to create a [FungibleToken] of some amount of the [ExampleFixedToken]
-     * in the [ourPayment] parameter.
+     * - Then, make an IssuedTokenType for our ExampleFixedToken payment
+     * - Then, make an Amount of the IssuedTokenType
      * - Then, we need to add a Move command to our TransactionBuilder for both the payment and
      * counter party asset.
-     * -- Here, the [addMoveFungibleTokens] and [addMoveNonFungibleTokens] helper methods from
-     * the Token SDK will come in handy.
-     * -- Control+Click the above helper methods to see the usage.
+     * -- Here, the [QueryUtilitiesKt.addMoveFungibleTokens] and [QueryUtilitiesKt.addMoveNonFungibleTokens]
+     * helper methods from the Token SDK will come in handy.
+     * --- For [addMoveFungibleTokens], we'll need to add a QueryCriteria to fetch the correct FungibleTokens
+     * from our vault. Use the [QueryUtilitiesKt.tokenAmountWithIssuerCriteria].
      * - Finally, to get our unit test passing, use the [serviceHub] to sign the initial transaction
      * and return the partially signed transaction.
      */
@@ -229,16 +217,6 @@ public class TokenSdkExercises {
                 a.getServices().getCordappProvider().getContractAttachmentID(IOUContract.IOU_CONTRACT_ID));
         NonFungibleToken nonFungibleToken = createNonFungibleFixedToken(partyB, partyB,
                 a.getServices().getCordappProvider().getContractAttachmentID(IOUContract.IOU_CONTRACT_ID));
-
-//        TokenSdkExamples.ExampleFixedToken token = new TokenSdkExamples.ExampleFixedToken("CUSTOMTOKEN", 0);
-//        IssuedTokenType issuedTokenType = new IssuedTokenType(partyA, token);
-//        FungibleToken fungibleToken =  new FungibleToken(new Amount<>(1000L, issuedTokenType), partyA,
-//                a.getServices().getCordappProvider().getContractAttachmentID(IOUContract.IOU_CONTRACT_ID));
-//
-//        IssuedTokenType issuedTokenType2 = new IssuedTokenType(partyB, token);
-//        NonFungibleToken nonFungibleToken = new NonFungibleToken(issuedTokenType2, partyB, new UniqueIdentifier(),
-//                a.getServices().getCordappProvider().getContractAttachmentID(IOUContract.IOU_CONTRACT_ID));
-
 
         Future<SignedTransaction> fungibleFuture = a.startFlow(new IssueTokensFlow(fungibleToken));
         network.runNetwork();
