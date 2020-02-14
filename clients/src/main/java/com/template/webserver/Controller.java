@@ -43,7 +43,7 @@ public class Controller {
         UniqueIdentifier linearIdentifier = UniqueIdentifier.Companion.fromString(linearId);
         QueryCriteria criteria = new LinearStateQueryCriteria(
                 null, ImmutableList.of(linearIdentifier),
-                Vault.StateStatus.ALL, null);
+                Vault.StateStatus.UNCONSUMED, null);
         return proxy.vaultQueryByCriteria(criteria, IOUState.class).getStates();
     }
 
