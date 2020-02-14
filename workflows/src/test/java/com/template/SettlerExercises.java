@@ -52,6 +52,25 @@ public class SettlerExercises {
         network.stopNodes();
     }
 
+    /**
+     * TODO: Implement the [IOUNovateFlow].
+     * @see IOUNovateFlow
+     * Hint:
+     * - In this flow, we will take a previously created IOU between Party A and Party B with
+     * an amount of IOUTokens as the owed amount, and we'll novate it in terms of US Dollars.
+     * We will use this flow later as a subflow in the [IOUSettleFlow].
+     *
+     * - First, we need to get the notary and Exchange Rate Oracle [Party]
+     * identity using the [serviceHub].
+     * - Then, we build the transaction:
+     * -- Use the existing IOU as input state.
+     * -- Add a new IOUState as output that has the amount field replaced with the amount
+     * in terms of USD. Use the [withNewAmount] helper method of IOUState and the
+     * [FiatCurrency.Companion.getInstance] method to get the Currency code.
+     * -- Add the Novate command and be sure to add the Oracle as a required signer.
+     * - Then, verify and sign the transaction.
+     * - Finally, subflow the [ExchangeRateOracleFlow] and return the result.
+     */
     @Test
     public void implementIOUNovateFlow() throws ExecutionException, InterruptedException {
         // Create an IOU between party A and B using IOUToken
@@ -78,6 +97,18 @@ public class SettlerExercises {
         assertEquals(2, stx.getSigs().size());
     }
 
+    /**
+     * TODO: Implement the [OffLedgerPaymentFlow].
+     * @see OffLedgerPaymentFlow
+     * @see OffLedgerPaymentRailService
+     * Hint:
+     * In this simple flow, we will use the [OffLedgerPaymentRailService] to
+     * initiate the off ledger payment and return the resulting transaction ID.
+     *
+     * - First, use the [ServiceHub] to get the OffledgerPaymentRail [CordaService]
+     * - Then, call the [makePayment] method with the off ledger account number and
+     * amount of USD to send and return the result.
+     */
     @Test
     public void implementOffLedgerPaymentFlow() throws ExecutionException, InterruptedException {
         Future<String> issueFuture = a.startFlow(new OffLedgerPaymentFlow("ABCD1234", 300.0));
@@ -87,6 +118,28 @@ public class SettlerExercises {
         assertEquals("TEST_TRANSACTION_ID_1234", transactionId);
     }
 
+    /**
+     * TODO: Implement the [IOUVerifySettlementFlow].
+     * @see IOUVerifySettlementFlow
+     * Hint:
+     * In this flow, we will use our Settler Oracle to verify that the off ledger
+     * payment was made and the correct amount was paid in US Dollars.
+     *
+     * - First, we need to get the notary and Settler Oracle [Party]
+     * identity using the [serviceHub].
+     * - Then, we build the transaction:
+     * -- Use the existing IOU as input state.
+     * -- Add a new IOUState as output that has the IOU marked as settled
+     * using the [withSettled] helper method of IOUState.
+     * -- Add the Settle command and be sure to add the Oracle as a required signer.
+     * - Then, verify and sign the transaction.
+     * - Finally, we need to get the Settler Oracle to verify the transaction and
+     * sign the transaction.
+     * -- Subflow the [SignOffLedgerPayment] flow. The Settler Oracle will use
+     * the SettlerOracleService to verify the off ledger payment using the
+     * transaction id. The flow will return the Oracle's signature.
+     * -- Add the signature to the SignedTransaction and return this.
+     */
     @Test
     public void implementIOUVerifySettlementFlow() throws ExecutionException, InterruptedException {
         IOUState state = new IOUState(
